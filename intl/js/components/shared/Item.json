@@ -1,0 +1,7 @@
+[
+  {
+    "id": "item.header.title",
+    "description": "Title for the item header.",
+    "defaultMessage": "Edit Mode"
+  }
+]

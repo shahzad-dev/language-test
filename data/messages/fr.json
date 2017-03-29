@@ -1,0 +1,19 @@
+[
+  {
+    "id": "item.header.title",
+    "description": "Title for the item header.",
+    "message": "Mode édition",
+    "files": []
+  },
+  {
+    "id": "main.title",
+    "description": "Description in header",
+    "message": "Complex web apps made easy - French",
+    "files": []
+  },
+  {
+    "id": "greeting.welcome_message",
+    "message": "Bienvenue {name}, vous avez reçu {unreadCount, plural, =0 {no new messages} one {{formattedUnreadCount} new message} other {{formattedUnreadCount} message neuf}} depuis {formattedLastLoginTime}.",
+    "files": []
+  }
+]

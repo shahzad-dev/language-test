@@ -6,12 +6,15 @@ import webpack from 'webpack';
 import WebpackDevServer from 'webpack-dev-server';
 import {clean} from 'require-clean';
 import {exec} from 'child_process';
+import {run} from './scripts/translationRunner';
 
 const APP_PORT = 3000;
 const GRAPHQL_PORT = 8000;
 
 let graphQLServer;
 let appServer;
+
+run();
 
 function startAppServer(callback) {
     // Serve the Relay app

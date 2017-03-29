@@ -37,7 +37,22 @@ import {
   getViewer,
   getWidget,
   getWidgets,
+  setLang,
 } from './database';
+
+import { join } from 'path';
+import fs from 'fs';
+import Promise from 'bluebird';
+//import IntlMessageType from '../types/IntlMessageType';
+
+// A folder with messages
+const CONTENT_DIR = join(__dirname, './messages');
+const readFile = Promise.promisify(fs.readFile);
+
+function readLocaleFile(locale){
+
+}
+//console.log("Content Dir", CONTENT_DIR);
 
 /**
  * We get the node interface and field from the Relay library.
@@ -93,20 +108,96 @@ var hobbyType = new GraphQLObjectType({
   interfaces: [nodeInterface],
 });
 
+const IntlMessageType = new GraphQLObjectType({
+  name: 'translation',
+  fields: {
+    id: { type: new GraphQLNonNull(GraphQLString) },
+    defaultMessage: { type: new GraphQLNonNull(GraphQLString) },
+    message: { type: GraphQLString },
+    description: { type: GraphQLString },
+    files: { type: new GraphQLList(GraphQLString) },
+  },
+});
 
 /**
  * Define your own connection types here
  */
 
 var {connectionType: hobbyConnection} =
-  connectionDefinitions({name: 'Hobbies', nodeType: hobbyType});
+connectionDefinitions({name: 'Hobbies', nodeType: hobbyType});
 
+/*const localeData = {
+   en:[
+     {
+       "id": "main.title",
+       "description": "Description in header",
+       "defaultMessage": "Complex web apps made easy",
+       "message": "Complex web apps made easy - English"
+     },
+     {
+       "id": "greeting.welcome_message",
+       "defaultMessage": "Welcome {name}, you have received {unreadCount, plural, =0 {no new messages} one {{formattedUnreadCount} new message} other {{formattedUnreadCount} new messages}} since {formattedLastLoginTime}.",
+       "message": "Welcome {name}, you have received {unreadCount, plural, =0 {no new messages} one {{formattedUnreadCount} new message} other {{formattedUnreadCount} new messages}} since {formattedLastLoginTime}."
+     }
+   ],
+    fr:[
+      {
+        "id": "main.title",
+        "description": "Description in header",
+        "defaultMessage": "Complex web apps made easy",
+        "message": "Complex web apps made easy - French"
+      },
+      {
+        "id": "greeting.welcome_message",
+        "defaultMessage": "Bienvenue {name}, vous avez reçu {unreadCount, plural, =0 {no new messages} one {{formattedUnreadCount} new message} other {{formattedUnreadCount} message neuf}} depuis {formattedLastLoginTime}.",
+        "message": "Bienvenue {name}, vous avez reçu {unreadCount, plural, =0 {no new messages} one {{formattedUnreadCount} new message} other {{formattedUnreadCount} message neuf}} depuis {formattedLastLoginTime}."
+      }
+    ]
+};*/
 
 var userType = new GraphQLObjectType({
   name: 'Viewer',
   description: 'A person who uses our app',
   fields: () => ({
     id: globalIdField('Viewer'),
+    lang: {
+      type: GraphQLString,
+      defaultValue: "en",
+      resolve: ( obj ) => obj.lang
+    },
+    /*intl: {
+      type: new GraphQLList(IntlMessageType),
+      args: {
+        locale: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve: (parent, { locale }, { rootValue: objectManager } ) => {
+          console.log("Locale", locale);
+          return localeData[locale];
+      },
+    },*/
+    intl: {
+      type: new GraphQLList(IntlMessageType),
+      async resolve (parent, { rootValue: objectManager } ) {
+          let user = getViewer();
+          let { lang } = user;
+          let localeData;
+          //console.log("Locale", lang);
+          //const readFile = Promise.promisify(fs.readFile);
+          try {
+            localeData = await readFile(join(CONTENT_DIR, `${lang}.json`));
+          } catch (err) {
+            if (err.code === 'ENOENT') {
+              throw new Error(`Locale '${lang}' not found`);
+            }
+          }
+          //console.log("Locale Data", localeData);
+          return JSON.parse(localeData);
+
+          //localeData = readLocaleFile(user.lang);
+          //console.log("Locale Data", localeData);
+          //return localeData;
+      },
+   },
     hobby: {
       type: hobbyType,
       args: { ...{ id: { type: GraphQLID } } },
@@ -258,6 +349,29 @@ const hobbyDeleteMutation = mutationWithClientMutationId({
     return ( {id} );
   }
 });
+
+const viewerUpdateMutation = mutationWithClientMutationId({
+  name: 'Viewer_update',
+  inputFields: {
+    id: { type: new GraphQLNonNull( GraphQLID ) },
+    lang: { type: new GraphQLNonNull(GraphQLString) },
+  },
+  outputFields: {
+      Viewer: {
+        type: userType,
+        resolve: ( parent, args, context, { rootValue: objectManager } ) => getUser('1')
+     },
+  },
+  mutateAndGetPayload: async( { id, lang,}, context, { rootValue: objectManager } ) => {
+    // Do not use the passed ID at this point. Use the viewer user ID since it is verified
+        const local_id = fromGlobalId( id ).id
+        //const local_id = objectManager.getViewerUserId()
+        //console.log("Update Lang", lang);
+        setLang(lang);
+        return { local_id }
+    },
+})
+
 //==============================================================================
 var mutationType = new GraphQLObjectType({
   name: 'Mutation',
@@ -265,6 +379,7 @@ var mutationType = new GraphQLObjectType({
     insertHobby: hobbyAddMutation,
     updateHobby: hobbyUpdateMutation,
     deleteHobby: hobbyDeleteMutation,
+    viewerUpdate: viewerUpdateMutation,
   })
 });
 

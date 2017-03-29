@@ -15,6 +15,8 @@ class Widget {}
 var viewer = new User();
 viewer.id = '1';
 viewer.name = 'Anonymous';
+viewer.lang = 'en';
+
 var widgets = ['What\'s-it', 'Who\'s-it', 'How\'s-it'].map((name, i) => {
   var widget = new Widget();
   widget.name = name;
@@ -28,6 +30,7 @@ module.exports = {
   getViewer: () => viewer,
   getWidget: (id) => widgets.find(w => w.id === id),
   getWidgets: () => widgets,
+  setLang: locale => viewer.lang = locale,
   User,
   Widget,
 };

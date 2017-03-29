@@ -1,5 +1,13 @@
 {
   "passPerPreset": true,
+  "plugins": [
+  [
+      "react-intl", {
+        "messagesDir": "./intl",
+        "enforceDescriptions": false
+      }
+  ]
+],
   "presets": [
     {
       "plugins": [

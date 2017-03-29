@@ -1,0 +1,22 @@
+[
+  {
+    "id": "item.header.title",
+    "description": "Title for the item header.",
+    "defaultMessage": "Edit Mode",
+    "message": "",
+    "files": []
+  },
+  {
+    "id": "main.title",
+    "description": "Description in header",
+    "defaultMessage": "Complex web apps made easy",
+    "message": "",
+    "files": []
+  },
+  {
+    "id": "greeting.welcome_message",
+    "defaultMessage": "Welcome {name}, you have received {unreadCount, plural, =0 {no new messages} one {{formattedUnreadCount} new message} other {{formattedUnreadCount} new messages}} since {formattedLastLoginTime}.",
+    "message": "",
+    "files": []
+  }
+]
